@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { Post } from "./post.model";
 
 @Injectable({ providedIn: "root" })
-export class Postservice {
+export class PostsService {
   private posts: Post[] = [];
 
   getPosts() {
