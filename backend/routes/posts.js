@@ -1,6 +1,7 @@
 const express = require("express");
 const multer = require("multer");
 const Post = require("../models/post");
+const checkAuth = require("../middleware/check-auth");
 
 const router = express.Router();
 
@@ -30,6 +31,7 @@ const storage = multer.diskStorage({
 
 router.post(
   "",
+  checkAuth,
   multer({ storage: storage }).single("image"),
   (req, res, next) => {
     const url = req.protocol + "://" + req.get("host");
@@ -52,6 +54,7 @@ router.post(
 
 router.put(
   "/:id",
+  checkAuth,
   multer({ storage: storage }).single("image"),
   (req, res, next) => {
     let imagePath = req.body.imagePath;
@@ -73,12 +76,25 @@ router.put(
 );
 
 router.get("", (req, res, next) => {
-  Post.find().then(documents => {
-    res.status(200).json({
-      message: "Posts feteched  sucessfully",
-      posts: documents
+  const pageSize = +req.query.pagesize;
+  const currentPage = +req.query.page;
+  const postQuery = Post.find();
+  let fetchedPosts;
+  if (pageSize && currentPage) {
+    postQuery.skip(pageSize * (currentPage - 1)).limt(pageSize);
+  }
+  postQuery
+    .then(documents => {
+      fetchedPosts = documents;
+      return Post.count();
+    })
+    .then(count => {
+      res.status(200).json({
+        message: "Posts feteched  sucessfully",
+        posts: fetchedPosts,
+        maxPosts: count
+      });
     });
-  });
 });
 
 router.get(":id", (req, res, next) => {
@@ -90,7 +106,7 @@ router.get(":id", (req, res, next) => {
     }
   });
 });
-router.delete("/:id", (req, res, next) => {
+router.delete("/:id", checkAuth, (req, res, next) => {
   Post.deleteOne({ _id: req.params.id }).then(result => {
     console.log(result);
     res.status(200).json({ message: "Post deleted!" });
