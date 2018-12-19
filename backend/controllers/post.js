@@ -54,7 +54,7 @@ exports.updatePost = (req, res, next) => {
     });
 };
 
-exports.getPosts =(req, res, next) => {
+exports.getPosts = (req, res, next) => {
   const pageSize = +req.query.pagesize;
   const currentPage = +req.query.page;
   const postQuery = Post.find();
@@ -79,8 +79,9 @@ exports.getPosts =(req, res, next) => {
         message: "fetching post failed"
       });
     });
+};
 
-exports.singlePost =  (req, res, next) => {
+exports.singlePost = (req, res, next) => {
   Post.findById(req.params.id)
     .then(post => {
       if (post) {
@@ -94,10 +95,12 @@ exports.singlePost =  (req, res, next) => {
         message: "fetching post failed"
       });
     });
+};
+
 exports.deletePost = (req, res, next) => {
   Post.deleteOne({ _id: req.params.id, creator: req.userData.userId })
     .then(result => {
-      if (result.nModified > 0) {
+      if (result.n > 0) {
         res.status(200).json({ message: "Deletion successful!" });
       } else {
         res.status(401).json({ message: "Not Authorized!" });
@@ -108,4 +111,4 @@ exports.deletePost = (req, res, next) => {
         message: "fetching post failed"
       });
     });
-
+};
